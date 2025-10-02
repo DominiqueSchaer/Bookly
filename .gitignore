@@ -1,0 +1,18 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Alembic
+backend/migrations/versions/*.py
+!backend/migrations/versions/.keep
+
+# Node
+frontend-htmx/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
