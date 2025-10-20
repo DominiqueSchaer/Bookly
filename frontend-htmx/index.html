@@ -262,6 +262,9 @@
         return JSON.parse(JSON.stringify(value));
       }
 
+      const apiBaseMeta = document.querySelector('meta[name="api-base"]');
+      const apiBase = apiBaseMeta?.content ?? '/api';
+
       function pad(number) {
         return String(number).padStart(2, '0');
       }
