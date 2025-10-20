@@ -57,3 +57,8 @@ Before opening a PR run:
 
 - Backend: `pytest`, `ruff check .`, `black .`, `mypy .`
 - Frontend: `npm run build:css` to ensure Tailwind compiles without errors.
+
+
+## Backend testing
+.\.venv\Scripts\Activate.ps1
+uvicorn app.main:app --reload --port 8000

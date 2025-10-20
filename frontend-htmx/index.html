@@ -6,7 +6,7 @@
     <meta name="api-base" content="http://localhost:8000/api" />
     <title>Shared Resource Calendar</title>
     <link rel="stylesheet" href="static/output.css" />
-    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-gbnI6F+YVMz/KGm3jIt6fFixNUg8mqOOuicF/CvNC2DcJIOf5H5z5z7lFQke3rG0" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10" crossorigin="anonymous"></script>
   </head>
   <body>
     <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-6 py-12">
@@ -23,10 +23,6 @@
               <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Next open date</p>
               <p id="calendar-next-open" class="text-sm font-semibold text-slate-700">—</p>
             </div>
-            <a id="new-request-link" class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500" href="#">
-              <span aria-hidden="true">+</span>
-              New request
-            </a>
           </div>
         </header>
 
@@ -44,7 +40,7 @@
               </div>
             </header>
 
-            <dl class="grid gap-4 sm:grid-cols-3" id="calendar-metrics">
+            <dl class="grid gap-4 sm:grid-cols-2" id="calendar-metrics">
               <div class="rounded-lg bg-slate-50 p-4">
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Reservations</dt>
                 <dd id="metric-reservations" class="mt-1 text-2xl font-semibold text-slate-900">0</dd>
@@ -52,10 +48,6 @@
               <div class="rounded-lg bg-slate-50 p-4">
                 <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Pending approval</dt>
                 <dd id="metric-pending" class="mt-1 text-2xl font-semibold text-amber-600">0</dd>
-              </div>
-              <div class="rounded-lg bg-slate-50 p-4">
-                <dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Remaining slots</dt>
-                <dd id="metric-remaining" class="mt-1 text-2xl font-semibold text-emerald-600">0</dd>
               </div>
             </dl>
 
@@ -71,118 +63,231 @@
             </div>
           </article>
 
-          <div class="space-y-6">
-            <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <header class="flex items-start justify-between">
-                <div>
-                  <h2 class="text-xl font-semibold text-slate-900">Day overview</h2>
-                  <p class="text-sm text-slate-500">Select a day to inspect reservations and status.</p>
+          <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <header class="space-y-2">
+              <h2 class="text-xl font-semibold text-slate-900">New request</h2>
+              <p class="text-sm text-slate-500">Share guest details to add a booking to the calendar.</p>
+            </header>
+            <div id="new-request-status" class="mt-4 hidden rounded-md border px-3 py-2 text-sm"></div>
+            <form id="new-request-form" class="mt-4 space-y-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="space-y-1">
+                  <label class="text-xs font-medium uppercase tracking-wide text-slate-500" for="request-full-name">Guest name</label>
+                  <input class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" id="request-full-name" name="fullName" type="text" required maxlength="255" placeholder="Ada Lovelace" />
                 </div>
-              </header>
-              <div id="day-overview" class="pt-4">
-                <p class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">Select a day in the calendar to view reservations and approve requests.</p>
+                <div class="space-y-1">
+                  <label class="text-xs font-medium uppercase tracking-wide text-slate-500" for="request-email">Guest email</label>
+                  <input class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" id="request-email" name="email" type="email" required placeholder="guest@example.com" />
+                </div>
               </div>
-            </article>
-
-            <article class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <header class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold text-slate-900">Pending approvals</h2>
-                <span id="pending-count" class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">0 open</span>
-              </header>
-              <div id="pending-approvals" class="pt-4">
-                <p class="py-6 text-sm text-slate-500">Loading pending requests…</p>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div class="space-y-1">
+                  <label class="text-xs font-medium uppercase tracking-wide text-slate-500" for="request-start-date">Start date</label>
+                  <input class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" id="request-start-date" name="startDate" type="date" required />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-xs font-medium uppercase tracking-wide text-slate-500" for="request-end-date">End date</label>
+                  <input class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" id="request-end-date" name="endDate" type="date" required />
+                </div>
               </div>
-            </article>
-          </div>
+              <div class="space-y-1">
+                <label class="text-xs font-medium uppercase tracking-wide text-slate-500" for="request-requested-by">Requested by</label>
+                <input class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" id="request-requested-by" name="requestedBy" type="text" required maxlength="120" placeholder="Coordinator name" />
+              </div>
+              <div class="space-y-1">
+                <label class="text-xs font-medium uppercase tracking-wide text-slate-500" for="request-notes">Notes (optional)</label>
+                <textarea class="min-h-[96px] w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100" id="request-notes" name="notes" placeholder="Share arrival details or special requirements."></textarea>
+              </div>
+              <input id="request-resource-id" name="resourceId" type="hidden" />
+              <div class="flex items-center justify-end gap-3 pt-2">
+                <button class="inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500" type="submit" id="new-request-submit">Submit request</button>
+              </div>
+            </form>
+          </article>
         </section>
       </section>
-    </main>
+      <script>
+      function parseMonthSlug(monthSlug) {
+        if (!monthSlug) return null;
+        const parts = monthSlug.split('-');
+        if (parts.length !== 2) return null;
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+        if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+          return null;
+        }
+        return new Date(Date.UTC(year, month - 1, 1));
+      }
 
-    <script>
-      const apiMeta = document.querySelector('meta[name="api-base"]');
-      const apiBase = apiMeta ? apiMeta.content.replace(/\/$/, '') : '';
-      const fallbackResponse = {
-        resource: { id: 'alder-lake-house', name: 'alder-lake-house', displayName: 'Alder Lake House' },
-        calendar: {
-          monthLabel: 'October 2025',
-          selectedIso: '2025-10-14',
-          totalBookings: 9,
-          pendingCount: 4,
-          remainingSlots: 18,
-          nextAvailableLabel: 'Tue, 22 Oct 2025',
-          updatedLabel: 'Synced a few moments ago',
+      function buildFallbackWeeks(anchor, todayIso) {
+        const weeks = [];
+        const month = anchor.getUTCMonth();
+        const weekStart = new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth(), 1));
+        const offset = (weekStart.getUTCDay() + 6) % 7; // align to Monday
+        weekStart.setUTCDate(weekStart.getUTCDate() - offset);
+
+        let currentStart = weekStart;
+        while (weeks.length < 6) {
+          const week = [];
+          for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+            const current = new Date(currentStart);
+            current.setUTCDate(currentStart.getUTCDate() + dayIndex);
+            const iso = current.toISOString().split('T')[0];
+            week.push({
+              iso,
+              dayLabel: String(current.getUTCDate()),
+              isCurrentMonth: current.getUTCMonth() === month,
+              isToday: iso === todayIso,
+              isUnavailable: false,
+              isFull: false,
+              pendingCount: 0,
+              remainingSlots: 0,
+              bookings: [],
+            });
+          }
+          weeks.push(week);
+
+          const nextWeekStart = new Date(currentStart);
+          nextWeekStart.setUTCDate(currentStart.getUTCDate() + 7);
+
+          let nextWeekHasCurrentDay = false;
+          for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
+            const probe = new Date(nextWeekStart);
+            probe.setUTCDate(nextWeekStart.getUTCDate() + dayIndex);
+            if (probe.getUTCMonth() === month) {
+              nextWeekHasCurrentDay = true;
+              break;
+            }
+          }
+
+          if (!nextWeekHasCurrentDay) {
+            break;
+          }
+
+          currentStart = nextWeekStart;
+        }
+
+        return weeks;
+      }
+
+      function buildFallbackResponse(anchorDate, todayDate, preferredIso) {
+        const todayIso = todayDate.toISOString().split('T')[0];
+        const calendarWeeks = buildFallbackWeeks(anchorDate, todayIso);
+        const calendar = {
+          weeks: calendarWeeks,
           weekdayLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          weeks: [
-            [
-              { iso: '2025-10-07', dayLabel: '7', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-08', dayLabel: '8', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-09', dayLabel: '9', isCurrentMonth: true, bookings: [{ id: 201, customerName: 'Nguyen Family', windowLabel: 'Whole day stay', status: 'confirmed' }], pendingCount: 0, remainingSlots: 2 },
-              { iso: '2025-10-10', dayLabel: '10', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-11', dayLabel: '11', isCurrentMonth: true, bookings: [{ id: 202, customerName: 'Lopez Wedding', windowLabel: 'Weekend celebration', status: 'confirmed' }], pendingCount: 0, remainingSlots: 0, isFull: true },
-              { iso: '2025-10-12', dayLabel: '12', isCurrentMonth: true, bookings: [{ id: 203, customerName: 'Maintenance Crew', windowLabel: 'Deep clean', status: 'confirmed' }], pendingCount: 0, remainingSlots: 0, isUnavailable: true },
-              { iso: '2025-10-13', dayLabel: '13', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 }
-            ],
-            [
-              { iso: '2025-10-14', dayLabel: '14', isCurrentMonth: true, isToday: true, bookings: [
-                { id: 301, customerName: 'Harper Family', windowLabel: 'All-day stay', status: 'confirmed', partySize: 4, notes: 'Celebrating an anniversary.' },
-                { id: 302, customerName: 'Jackson Friends', windowLabel: 'Full day stay', status: 'pending', partySize: 6, notes: 'Hoping for early check-in on Monday night.' }
-              ], pendingCount: 1, remainingSlots: 1 },
-              { iso: '2025-10-15', dayLabel: '15', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-16', dayLabel: '16', isCurrentMonth: true, bookings: [{ id: 303, customerName: 'Clarkson Offsite', windowLabel: 'Whole day stay', status: 'confirmed' }], pendingCount: 0, remainingSlots: 2 },
-              { iso: '2025-10-17', dayLabel: '17', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-18', dayLabel: '18', isCurrentMonth: true, bookings: [{ id: 304, customerName: 'Ramirez Family', windowLabel: 'Weekend stay', status: 'confirmed' }], pendingCount: 0, remainingSlots: 2 },
-              { iso: '2025-10-19', dayLabel: '19', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-20', dayLabel: '20', isCurrentMonth: true, bookings: [{ id: 305, customerName: 'Sato Group', windowLabel: 'Team offsite', status: 'pending', partySize: 3 }], pendingCount: 1, remainingSlots: 2 }
-            ],
-            [
-              { iso: '2025-10-21', dayLabel: '21', isCurrentMonth: true, bookings: [{ id: 401, customerName: 'Design Sprint Crew', windowLabel: 'Workshop day', status: 'pending', partySize: 5 }], pendingCount: 1, remainingSlots: 2 },
-              { iso: '2025-10-22', dayLabel: '22', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-23', dayLabel: '23', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-24', dayLabel: '24', isCurrentMonth: true, bookings: [{ id: 402, customerName: 'Coleman Family', windowLabel: 'Weekend stay', status: 'confirmed' }], pendingCount: 0, remainingSlots: 2 },
-              { iso: '2025-10-25', dayLabel: '25', isCurrentMonth: true, bookings: [{ id: 403, customerName: 'Waitlist Crew', windowLabel: 'Overflow request', status: 'pending', partySize: 2 }], pendingCount: 1, remainingSlots: 1 },
-              { iso: '2025-10-26', dayLabel: '26', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 },
-              { iso: '2025-10-27', dayLabel: '27', isCurrentMonth: true, bookings: [], pendingCount: 0, remainingSlots: 3 }
-            ]
-          ]
-        },
-        selectedDay: null,
-        pendingRequests: [
-          { id: 302, customerName: 'Jackson Friends', date: '2025-10-14', dateLabel: 'Tue, 14 Oct', windowLabel: 'Full day stay', partySize: 6, notes: 'Hoping for early check-in on Monday night.' },
-          { id: 305, customerName: 'Sato Group', date: '2025-10-20', dateLabel: 'Mon, 20 Oct', windowLabel: 'Team offsite', partySize: 3, notes: 'Needs projector.' },
-          { id: 401, customerName: 'Design Sprint Crew', date: '2025-10-21', dateLabel: 'Tue, 21 Oct', windowLabel: 'Workshop day', partySize: 5, notes: 'Need whiteboard and fast Wi-Fi.' },
-          { id: 403, customerName: 'Waitlist Crew', date: '2025-10-25', dateLabel: 'Sat, 25 Oct', windowLabel: 'Overflow request', partySize: 2, notes: 'Flexible on arrival time.' }
-        ]
-      };
-      const fallbackDayDetails = {};
-      const dateFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      fallbackResponse.calendar.weeks.flat().forEach((day) => {
-        const pendingCount = day.pendingCount ?? day.bookings.filter((booking) => booking.status === 'pending').length;
-        const confirmedCount = day.bookings.filter((booking) => booking.status === 'confirmed' || booking.status === 'approved').length;
-        fallbackDayDetails[day.iso] = {
-          iso: day.iso,
-          date: day.iso,
-          dateLabel: dateFormatter.format(new Date(`${day.iso}T00:00:00`)),
-          confirmedCount,
-          pendingCount,
-          remainingSlots: day.remainingSlots ?? 0,
-          bookings: day.bookings,
-          summary: day.bookings.length
-            ? 'Review guest details, confirm approvals, or release slots as needed.'
-            : day.isUnavailable
-              ? 'House unavailable today for scheduled maintenance.'
-              : 'Wide open day ready for a new booking.',
+          monthLabel: anchorDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+          selectedIso: preferredIso ?? todayIso,
+          totalBookings: 0,
+          pendingCount: 0,
+          remainingSlots: 0,
+          nextAvailableLabel: todayDate.toLocaleDateString('en-US', {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          }),
+          updatedLabel: 'Updated just now',
         };
-      });
-      fallbackResponse.selectedDay = fallbackDayDetails[fallbackResponse.calendar.selectedIso];
+
+        const dateFormatter = new Intl.DateTimeFormat('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+
+        const dayDetails = {};
+        calendar.weeks.flat().forEach((day) => {
+          const pendingCount = day.pendingCount ?? day.bookings.filter((booking) => booking.status === 'pending').length;
+          const confirmedCount = day.bookings.filter((booking) => booking.status === 'confirmed' || booking.status === 'approved').length;
+          dayDetails[day.iso] = {
+            iso: day.iso,
+            date: day.iso,
+            dateLabel: dateFormatter.format(new Date(`${day.iso}T00:00:00`)),
+            confirmedCount,
+            pendingCount,
+            remainingSlots: day.remainingSlots ?? 0,
+            bookings: day.bookings,
+            summary: day.bookings.length
+              ? 'Review guest details, confirm approvals, or release slots as needed.'
+              : day.isUnavailable
+                ? 'House unavailable today for scheduled maintenance.'
+                : 'Wide open day ready for a new booking.',
+          };
+        });
+
+        const selectedIso = dayDetails[calendar.selectedIso] ? calendar.selectedIso : todayIso;
+        calendar.selectedIso = selectedIso;
+
+        return {
+          response: {
+            resource: {
+              id: 'alder-lake-house',
+              name: 'alder-lake-house',
+              displayName: 'Riederalp',
+            },
+            calendar,
+            selectedDay: dayDetails[selectedIso] ?? null,
+            pendingRequests: [],
+          },
+          dayDetails,
+        };
+      }
+
+      const fallbackToday = new Date();
+      const fallbackAnchor = new Date(Date.UTC(fallbackToday.getUTCFullYear(), fallbackToday.getUTCMonth(), 1));
+      const fallbackInit = buildFallbackResponse(fallbackAnchor, fallbackToday, null);
+      const fallbackResponse = fallbackInit.response;
+      const fallbackDayDetails = fallbackInit.dayDetails;
 
       const state = {
         response: null,
         selectedDay: null,
-        dayCache: new Map(Object.entries(fallbackDayDetails).map(([date, detail]) => [date, JSON.parse(JSON.stringify(detail))])),
+        dayCache: new Map(Object.entries(fallbackDayDetails).map(([date, detail]) => [date, clone(detail)])),
+        currentMonth: null,
       };
 
+      const DEFAULT_RESOURCE_ID = 'alder-lake-house';
+      const newRequestForm = document.getElementById('new-request-form');
+      const newRequestStatus = document.getElementById('new-request-status');
+      const newRequestSubmit = document.getElementById('new-request-submit');
+      const newRequestStatusBaseClass = 'mt-4 rounded-md border px-3 py-2 text-sm';
+      const newRequestSubmitLabel = newRequestSubmit ? (newRequestSubmit.textContent?.trim() || 'Submit request') : 'Submit request';
+
       function clone(value) {
+        if (value === undefined || value === null) {
+          return value;
+        }
         return JSON.parse(JSON.stringify(value));
+      }
+
+      function pad(number) {
+        return String(number).padStart(2, '0');
+      }
+
+      function formatMonthFromDate(date) {
+        return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}`;
+      }
+
+      function formatIsoDate(date) {
+        return date.toISOString().split('T')[0];
+      }
+
+      function monthFromCalendar(calendar) {
+        if (!calendar?.weeks) {
+          return null;
+        }
+        const currentDay = calendar.weeks.flat().find((day) => day.isCurrentMonth && day.iso);
+        return currentDay ? currentDay.iso.slice(0, 7) : null;
+      }
+
+      function resolveCurrentMonth() {
+        return (
+          state.currentMonth ||
+          monthFromCalendar(state.response?.calendar) ||
+          formatMonthFromDate(new Date())
+        );
       }
 
       async function api(path, options) {
@@ -194,16 +299,89 @@
           ...options,
         });
         if (!response.ok) {
-          throw new Error(`Request failed with ${response.status}`);
+          let message = `Request failed with ${response.status}`;
+          try {
+            const errorBody = await response.json();
+            if (typeof errorBody?.detail === 'string') {
+              message = errorBody.detail;
+            } else if (Array.isArray(errorBody?.detail)) {
+              message = errorBody.detail
+                .map((item) => item?.msg ?? item?.message ?? 'Validation error')
+                .join(', ');
+            }
+          } catch {
+            try {
+              const fallbackText = await response.text();
+              if (fallbackText) {
+                message = fallbackText;
+              }
+            } catch {
+              // ignore parsing failure
+            }
+          }
+          throw new Error(message);
         }
         return response.json();
       }
 
+      function currentResourceId() {
+        return state.response?.resource?.id ?? DEFAULT_RESOURCE_ID;
+      }
+
+      function hideNewRequestStatus() {
+        if (!newRequestStatus) return;
+        newRequestStatus.textContent = '';
+        newRequestStatus.className = `hidden ${newRequestStatusBaseClass}`;
+      }
+
+      function showNewRequestStatus(message, tone = 'info') {
+        if (!newRequestStatus) return;
+        const toneClass =
+          tone === 'error'
+            ? 'border-rose-200 bg-rose-50 text-rose-700'
+            : 'border-emerald-200 bg-emerald-50 text-emerald-700';
+        newRequestStatus.textContent = message;
+        newRequestStatus.className = `${newRequestStatusBaseClass} ${toneClass}`;
+      }
+
+      function setNewRequestSubmitting(isSubmitting) {
+        if (!newRequestSubmit) return;
+        newRequestSubmit.disabled = isSubmitting;
+        if (isSubmitting) {
+          newRequestSubmit.textContent = 'Submitting…';
+          newRequestSubmit.classList.add('opacity-70');
+        } else {
+          newRequestSubmit.textContent = newRequestSubmitLabel;
+          newRequestSubmit.classList.remove('opacity-70');
+        }
+      }
+
+      function prefillRequestForm(preferredDate) {
+        if (!newRequestForm) return;
+        const elements = newRequestForm.elements;
+        const fallbackDate = preferredDate ?? state.selectedDay?.iso ?? formatIsoDate(new Date());
+        const startInput = elements.namedItem('startDate');
+        const endInput = elements.namedItem('endDate');
+        const resourceInput = elements.namedItem('resourceId');
+        if (startInput instanceof HTMLInputElement) {
+          startInput.value = fallbackDate;
+        }
+        if (endInput instanceof HTMLInputElement) {
+          endInput.min = fallbackDate;
+          if (!endInput.value || endInput.value < fallbackDate) {
+            endInput.value = fallbackDate;
+          }
+        }
+        if (resourceInput instanceof HTMLInputElement) {
+          resourceInput.value = currentResourceId();
+        }
+      }
+
       function statusClassForDay(day) {
+        if (day.isUnavailable) return 'border-slate-200 bg-slate-100 text-slate-500';
         if (day.isFull) return 'border-rose-200 bg-rose-50 text-rose-700';
         if ((day.pendingCount ?? 0) > 0) return 'border-amber-200 bg-amber-50';
         if (day.bookings.length > 0) return 'border-indigo-200 bg-indigo-50';
-        if ((day.remainingSlots ?? 0) > 0) return 'border-emerald-200 bg-emerald-50';
         return 'border-slate-200 bg-white';
       }
 
@@ -213,13 +391,7 @@
         document.getElementById('calendar-next-open').textContent = response.calendar.nextAvailableLabel ?? 'Check the calendar';
         document.getElementById('metric-reservations').textContent = response.calendar.totalBookings ?? 0;
         document.getElementById('metric-pending').textContent = response.calendar.pendingCount ?? 0;
-        document.getElementById('metric-remaining').textContent = response.calendar.remainingSlots ?? 0;
         document.getElementById('calendar-month-label').textContent = response.calendar.monthLabel;
-        const newRequestLink = document.getElementById('new-request-link');
-        if (newRequestLink) {
-          const date = response.calendar.selectedIso ?? response.selectedDay?.iso ?? '';
-          newRequestLink.href = `/bookings/new?resource_id=${response.resource.id}&date=${encodeURIComponent(date)}`;
-        }
       }
 
       function renderCalendarGrid(calendar) {
@@ -233,8 +405,6 @@
           .map((week) => {
             const days = week
               .map((day) => {
-                const remaining = day.remainingSlots ?? 0;
-                const pending = day.pendingCount ?? 0;
                 const hasBookings = day.bookings.length > 0;
                 const isSelected = calendar.selectedIso === day.iso;
                 const disabled = Boolean(day.isUnavailable);
@@ -250,20 +420,27 @@
                 const bookingsList = hasBookings
                   ? `<ul class="space-y-1">${day.bookings
                       .slice(0, 3)
-                      .map(
-                        (booking) => `<li class="flex items-center justify-between rounded-md bg-white/70 px-2 py-1 text-xs font-medium text-slate-600">
+                      .map((booking) => {
+                        const statusClass =
+                          {
+                            approved: 'bg-emerald-100 text-emerald-700',
+                            confirmed: 'bg-emerald-100 text-emerald-700',
+                            pending: 'bg-amber-100 text-amber-700',
+                            declined: 'bg-rose-100 text-rose-700',
+                            rejected: 'bg-rose-100 text-rose-700',
+                          }[booking.status] ?? 'bg-indigo-100 text-indigo-700';
+                        return `<li class="flex items-center rounded-md px-2 py-1 text-xs font-semibold ${statusClass}">
                           <span class="truncate">${booking.customerName}</span>
-                          <span class="ml-2 shrink-0 text-[11px] text-slate-400">${booking.windowLabel}</span>
-                        </li>`
-                      )
+                        </li>`;
+                      })
                       .join('')}</ul>${day.bookings.length > 3 ? `<p class="text-[11px] text-slate-500">+${day.bookings.length - 3} more</p>` : ''}`
                   : '';
-                let statusMessage = '<p class="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600">Schedule opens soon</p>';
-                if (remaining > 0) {
-                  statusMessage = `<p class="rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700">${remaining} slot${remaining === 1 ? '' : 's'} free</p>`;
-                } else if (pending > 0) {
-                  statusMessage = `<p class="rounded-md bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-700">${pending} awaiting approval</p>`;
-                } else if (day.isFull || hasBookings) {
+                let statusMessage = '';
+                if (day.isUnavailable) {
+                  statusMessage = '<p class="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">Unavailable</p>';
+                } else if (!hasBookings) {
+                  statusMessage = '<p class="rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600">Free</p>';
+                } else if (day.isFull) {
                   statusMessage = '<p class="rounded-md bg-rose-100 px-2 py-1 text-[11px] font-semibold text-rose-700">Fully booked</p>';
                 }
                 return `<button type="button" class="${classes}" data-date="${day.iso}" ${disabled ? 'disabled' : ''} ${isSelected ? 'aria-current="date"' : ''}>
@@ -290,100 +467,14 @@
         });
       }
 
-      function renderDayOverview(day, resourceId) {
-        const container = document.getElementById('day-overview');
-        if (!container) return;
-        if (!day) {
-          container.innerHTML = '<p class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-500">Select a day in the calendar to view reservations and approve requests.</p>';
-          return;
-        }
-        const alert = (day.remainingSlots ?? 0) === 0 && (day.pendingCount ?? 0) === 0
-          ? '<div class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">All slots are filled. Decline or reschedule requests to reopen capacity.</div>'
-          : (day.remainingSlots ?? 0) > 0
-            ? `<div class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">${day.remainingSlots} slot${day.remainingSlots === 1 ? '' : 's'} available. Send teammates a link to book.</div>`
-            : '';
-        const bookings = day.bookings.length > 0
-          ? day.bookings
-              .map((booking) => {
-                const details = [booking.windowLabel];
-                if (booking.partySize) details.push(`${booking.partySize} ppl`);
-                if (booking.owner) details.push(`requested by ${booking.owner}`);
-                const badgeClass = {
-                  approved: 'bg-emerald-100 text-emerald-700',
-                  confirmed: 'bg-emerald-100 text-emerald-700',
-                  pending: 'bg-amber-100 text-amber-700',
-                  declined: 'bg-rose-100 text-rose-700',
-                  rejected: 'bg-rose-100 text-rose-700',
-                }[booking.status] ?? 'bg-slate-100 text-slate-600';
-                return `<li class="py-4">
-                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="min-w-0 space-y-1">
-                      <p class="text-sm font-semibold text-slate-900">${booking.customerName}</p>
-                      <p class="text-xs text-slate-500">${details.join(' · ')}</p>
-                    </div>
-                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${badgeClass}">${booking.status}</span>
-                  </div>
-                  ${booking.notes ? `<p class="mt-2 text-sm text-slate-500">${booking.notes}</p>` : ''}
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    <a class="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600" href="/bookings/${booking.id}">View details</a>
-                    ${booking.status === 'pending'
-                      ? '<button class="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500" type="button">Approve</button><button class="inline-flex items-center gap-1 rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-500" type="button">Decline</button>'
-                      : ''}
-                  </div>
-                </li>`;
-              })
-              .join('')
-          : '<li class="py-6 text-sm text-slate-500">No reservations yet. Use the button above to create one.</li>';
-        container.innerHTML = `<div class="space-y-4">
-          <div class="flex items-start justify-between gap-4">
-            <div class="space-y-1">
-              <h3 class="text-lg font-semibold text-slate-900">${day.dateLabel}</h3>
-              <p class="text-sm text-slate-500">${day.summary ?? 'Manage requests, approvals, and open slots for this day.'}</p>
-            </div>
-            <a class="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600" href="/bookings/new?resource_id=${resourceId}&date=${day.iso}">Request slot</a>
-          </div>
-          <dl class="grid gap-3 sm:grid-cols-3">
-            <div class="rounded-lg bg-slate-50 p-3"><dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Confirmed</dt><dd class="mt-1 text-lg font-semibold text-indigo-600">${day.confirmedCount ?? 0}</dd></div>
-            <div class="rounded-lg bg-slate-50 p-3"><dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Pending</dt><dd class="mt-1 text-lg font-semibold text-amber-600">${day.pendingCount ?? 0}</dd></div>
-            <div class="rounded-lg bg-slate-50 p-3"><dt class="text-xs font-medium uppercase tracking-wide text-slate-500">Slots free</dt><dd class="mt-1 text-lg font-semibold text-emerald-600">${day.remainingSlots ?? 0}</dd></div>
-          </dl>
-          ${alert}
-          <ul class="divide-y divide-slate-100">${bookings}</ul>
-        </div>`;
+      function renderDayOverview(day) {
+        prefillRequestForm(day?.iso ?? null);
       }
 
-      function renderPendingRequests(requests) {
-        const container = document.getElementById('pending-approvals');
-        const badge = document.getElementById('pending-count');
-        if (!container || !badge) return;
-        badge.textContent = `${requests.length} open`;
-        if (requests.length === 0) {
-          container.innerHTML = '<p class="py-6 text-sm text-slate-500">No pending approval requests.</p>';
-          return;
-        }
-        const items = requests
-          .map((request) => {
-            const details = [request.dateLabel ?? request.date, request.windowLabel];
-            if (request.partySize) details.push(`${request.partySize} ppl`);
-            return `<li class="py-4">
-              <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div class="min-w-0 space-y-1">
-                  <p class="text-sm font-semibold text-slate-900">${request.customerName}</p>
-                  <p class="text-xs text-slate-500">${details.join(' · ')}</p>
-                </div>
-                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-amber-700">Pending</span>
-              </div>
-              ${request.notes ? `<p class="mt-2 text-sm text-slate-500">${request.notes}</p>` : ''}
-              <div class="mt-3 flex flex-wrap gap-2">
-                <button class="inline-flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-emerald-500" type="button">Approve</button>
-                <button class="inline-flex items-center gap-1 rounded-md bg-rose-600 px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-500" type="button">Decline</button>
-                <a class="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600" href="/bookings/${request.id}">View details</a>
-              </div>
-            </li>`;
-          })
-          .join('');
-        container.innerHTML = `<ul class="divide-y divide-slate-100">${items}</ul>`;
+      function renderPendingRequests() {
+        // no-op; pending list removed from UI
       }
+
       async function selectDay(dateIso) {
         try {
           const detail = await api(`/calendar/day?date=${encodeURIComponent(dateIso)}`);
@@ -403,34 +494,163 @@
           state.response.calendar.selectedIso = dateIso;
         }
         state.selectedDay = clone(state.dayCache.get(dateIso));
-        renderDayOverview(state.selectedDay, state.response.resource.id);
+        renderDayOverview(state.selectedDay);
         renderCalendarGrid(state.response.calendar);
       }
 
-      async function loadCalendar() {
+      async function loadCalendar(options = {}) {
+        const { month, selectedDate, resourceId } = options;
+        const searchParams = new URLSearchParams();
+        const requestedMonth = month || null;
+        if (requestedMonth) {
+          searchParams.set('month', requestedMonth);
+        }
+        if (selectedDate) {
+          searchParams.set('selectedDate', selectedDate);
+        }
+        const targetResource = resourceId || state.response?.resource?.id;
+        if (targetResource) {
+          searchParams.set('resourceId', targetResource);
+        }
+        const query = searchParams.toString();
+        const path = query ? `/calendar?${query}` : '/calendar';
         try {
-          const data = await api('/calendar');
+          const data = await api(path);
           state.response = data;
           state.selectedDay = data.selectedDay ?? null;
+          state.currentMonth = monthFromCalendar(data.calendar) ?? requestedMonth ?? resolveCurrentMonth();
+          state.dayCache = new Map();
+          if (state.selectedDay?.iso) {
+            state.dayCache.set(state.selectedDay.iso, clone(state.selectedDay));
+          }
         } catch (error) {
           console.warn('Using fallback calendar data because the API request failed.', error);
-          state.response = clone(fallbackResponse);
-          state.selectedDay = clone(fallbackResponse.selectedDay);
+          const inferredSelectedMonth = selectedDate ? selectedDate.slice(0, 7) : null;
+          const fallbackAnchor =
+            parseMonthSlug(requestedMonth) ??
+            parseMonthSlug(inferredSelectedMonth) ??
+            new Date();
+          const anchorUTC = new Date(Date.UTC(fallbackAnchor.getUTCFullYear(), fallbackAnchor.getUTCMonth(), 1));
+          const { response: fallbackResp, dayDetails } = buildFallbackResponse(
+            anchorUTC,
+            new Date(),
+            selectedDate ?? null,
+          );
+          state.response = fallbackResp;
+          state.selectedDay = clone(fallbackResp.selectedDay);
+          state.dayCache = new Map(Object.entries(dayDetails).map(([key, detail]) => [key, clone(detail)]));
+          state.currentMonth =
+            monthFromCalendar(state.response.calendar) ?? formatMonthFromDate(anchorUTC);
         }
         renderSummary(state.response);
         renderCalendarGrid(state.response.calendar);
-        renderDayOverview(state.selectedDay, state.response.resource.id);
-        renderPendingRequests(state.response.pendingRequests ?? []);
+        renderDayOverview(state.selectedDay);
+        renderPendingRequests();
+      }
+
+      function shiftMonth(offset) {
+        const [currentYear, currentMonthNumber] = resolveCurrentMonth().split('-').map(Number);
+        if (!Number.isFinite(currentYear) || !Number.isFinite(currentMonthNumber)) {
+          return;
+        }
+        const shifted = new Date(Date.UTC(currentYear, currentMonthNumber - 1 + offset, 1));
+        const monthSlug = formatMonthFromDate(shifted);
+        loadCalendar({ month: monthSlug });
+      }
+
+      function goToToday() {
+        const today = new Date();
+        loadCalendar({
+          month: formatMonthFromDate(today),
+          selectedDate: formatIsoDate(today),
+        });
+      }
+
+      if (newRequestForm) {
+        const startInput = newRequestForm.elements.namedItem('startDate');
+        const endInput = newRequestForm.elements.namedItem('endDate');
+        if (startInput instanceof HTMLInputElement && endInput instanceof HTMLInputElement) {
+          startInput.addEventListener('change', () => {
+            endInput.min = startInput.value || '';
+            if (endInput.value && startInput.value && endInput.value < startInput.value) {
+              endInput.value = startInput.value;
+            }
+          });
+        }
+        newRequestForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          hideNewRequestStatus();
+          const formData = new FormData(newRequestForm);
+          const fullName = formData.get('fullName')?.toString().trim() ?? '';
+          const email = formData.get('email')?.toString().trim() ?? '';
+          const startDate = formData.get('startDate')?.toString() ?? '';
+          const endDate = formData.get('endDate')?.toString() ?? '';
+          const requestedBy = formData.get('requestedBy')?.toString().trim() ?? '';
+          const notesValue = formData.get('notes');
+          const resourceId = formData.get('resourceId')?.toString() || currentResourceId();
+          const notes = notesValue ? notesValue.toString().trim() : '';
+
+          if (!fullName || !email || !startDate || !endDate || !requestedBy) {
+            showNewRequestStatus('Please complete all required fields.', 'error');
+            return;
+          }
+          if (endDate < startDate) {
+            showNewRequestStatus('End date must be on or after the start date.', 'error');
+            return;
+          }
+
+          setNewRequestSubmitting(true);
+          try {
+            await api('/bookings', {
+              method: 'POST',
+              body: JSON.stringify({
+                customer: {
+                  fullName,
+                  email,
+                },
+                startDate,
+                endDate,
+                requestedBy,
+                notes: notes || null,
+                resourceId,
+              }),
+            });
+            showNewRequestStatus('Request added to the calendar.', 'success');
+            await loadCalendar({
+              month: startDate.slice(0, 7),
+              selectedDate: startDate,
+              resourceId,
+            });
+            newRequestForm.reset();
+            prefillRequestForm(startDate);
+            window.setTimeout(() => {
+              hideNewRequestStatus();
+            }, 2000);
+          } catch (error) {
+            console.error('Failed to create booking request', error);
+            const message = error instanceof Error ? error.message : 'Failed to create booking request.';
+            showNewRequestStatus(message, 'error');
+          } finally {
+            setNewRequestSubmitting(false);
+          }
+        });
       }
 
       document.querySelectorAll('[data-calendar-action]').forEach((button) => {
         button.addEventListener('click', (event) => {
           const action = event.currentTarget.getAttribute('data-calendar-action');
-          console.info(`Calendar action "${action}" clicked. Wire this to the API when endpoints are ready.`);
+          if (action === 'prev') {
+            shiftMonth(-1);
+          } else if (action === 'next') {
+            shiftMonth(1);
+          } else if (action === 'today') {
+            goToToday();
+          }
         });
       });
 
       document.addEventListener('DOMContentLoaded', () => {
+        prefillRequestForm(formatIsoDate(new Date()));
         loadCalendar();
       });
     </script>

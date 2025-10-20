@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api", tags=["bookings"])
 
 DEFAULT_RESOURCE_ID = "alder-lake-house"
 DEFAULT_RESOURCE_NAME = "alder-lake-house"
-DEFAULT_RESOURCE_DISPLAY_NAME = "Alder Lake House"
+DEFAULT_RESOURCE_DISPLAY_NAME = "Riederalp"
 CAPACITY_PER_DAY = 1
 WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
