@@ -7,12 +7,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Copy metadata first to leverage Docker layer caching for dependencies
 COPY pyproject.toml README.md ./
+
+# Backend package must be present when building the wheel, so copy it
+COPY backend ./backend
 
 RUN pip install --upgrade pip && \
     pip install .[dev]
 
-COPY backend ./backend
 COPY frontend-htmx ./frontend-htmx
 
 ENV PYTHONPATH="/app/backend"
